@@ -1,0 +1,35 @@
+{
+  "harness": "google-antigravity",
+  "version": "1.0.0",
+  "permissions": {
+    "allow": [
+      "Bash(npm test)",
+      "Bash(npm run lint)",
+      "Read(./src/**)",
+      "Read(./test/**)",
+      "Read(./docs/**)"
+    ],
+    "ask": [
+      "Bash(npm install *)",
+      "Bash(git push *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(.env)",
+      "Bash(rm -rf *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|write_to_file|replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npm test"
+          }
+        ]
+      }
+    ]
+  }
+}
