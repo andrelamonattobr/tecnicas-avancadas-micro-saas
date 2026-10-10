@@ -164,10 +164,8 @@ E apresenta o resumo financeiro com Subtotal R$ 80,00, Desconto R$ 10,00 e Total
 
 ## 7. Restrições Técnicas de Implementação
 
-1. **Stack Tecnológica:** Node.js (versão 24+ em padrão ESM nativo), sem transpiladores complexos.
-2. **Dependências Externas:** Zero bibliotecas externas mandatórias para execução das regras de negócio; arquitetura autocontida em JavaScript padrão.
-3. **Suíte de Testes:** Executada via `node:test` e `node:assert` embutidos no runtime do Node.js (`npm test`), permitindo validação imediata em qualquer ambiente.
-4. **Precisão Numérica:** Arredondamento monetário em 2 casas decimais no momento da exibição e exportação.
+1. **Stack Tecnológica:** Spring boot para o backend da ferramenta, utilizando as dependecias Spring Web MVC, Spring Data JPA e H2 Database. E Angular para o frontend, que está utilizando typescript e css;
+2. **Precisão Numérica:** Arredondamento monetário em 2 casas decimais no momento da exibição e exportação.
 
 ---
 
