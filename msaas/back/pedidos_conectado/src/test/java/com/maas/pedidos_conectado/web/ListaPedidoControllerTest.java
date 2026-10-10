@@ -2,6 +2,7 @@ package com.maas.pedidos_conectado.web;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -10,9 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maas.pedidos_conectado.domain.exception.EntidadeNaoEncontradaException;
 import com.maas.pedidos_conectado.domain.exception.ValidacaoException;
 import com.maas.pedidos_conectado.service.ListaPedidoService;
-import com.maas.pedidos_conectado.web.dto.CriarListaPedidoDTO;
-import com.maas.pedidos_conectado.web.dto.ListaPedidoResponseDTO;
-import com.maas.pedidos_conectado.web.dto.RenomearListaPedidoDTO;
+import com.maas.pedidos_conectado.web.dto.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -134,16 +133,81 @@ class ListaPedidoControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/listas - Deve retornar lista de pedidos")
-    void deveRetornarListas() throws Exception {
-        ListaPedidoResponseDTO item = new ListaPedidoResponseDTO(
-                "l1", "emp-1", "Lista 1", Instant.now(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO
+    @DisplayName("POST /api/listas/{id}/itens - Deve adicionar item à lista com sucesso (201 Created)")
+    void deveAdicionarItemComSucesso() throws Exception {
+        CriarItemPedidoDTO itemDto = new CriarItemPedidoDTO("Parafuso Sextavado", new BigDecimal("100"), new BigDecimal("0.50"));
+        ItemPedidoResponseDTO responseDTO = new ItemPedidoResponseDTO(
+                "item-1", "lista-1", "Parafuso Sextavado", new BigDecimal("100"), new BigDecimal("0.50"), new BigDecimal("50.00")
         );
-        when(listaPedidoService.listar(null)).thenReturn(List.of(item));
 
-        mockMvc.perform(get("/api/listas"))
+        when(listaPedidoService.adicionarItem(eq("lista-1"), any(CriarItemPedidoDTO.class))).thenReturn(responseDTO);
+
+        mockMvc.perform(post("/api/listas/lista-1/itens")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(itemDto)))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "/api/listas/lista-1/itens/item-1"))
+                .andExpect(jsonPath("$.id").value("item-1"))
+                .andExpect(jsonPath("$.descricao").value("Parafuso Sextavado"))
+                .andExpect(jsonPath("$.subtotal").value(50.00));
+    }
+
+    @Test
+    @DisplayName("GET /api/listas/{id}/itens - Deve listar itens exclusivos da lista")
+    void deveListarItensDaLista() throws Exception {
+        ItemPedidoResponseDTO item1 = new ItemPedidoResponseDTO(
+                "item-1", "lista-1", "Parafuso Sextavado", new BigDecimal("100"), new BigDecimal("0.50"), new BigDecimal("50.00")
+        );
+        when(listaPedidoService.listarItens("lista-1")).thenReturn(List.of(item1));
+
+        mockMvc.perform(get("/api/listas/lista-1/itens"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value("l1"))
-                .andExpect(jsonPath("$[0].titulo").value("Lista 1"));
+                .andExpect(jsonPath("$[0].descricao").value("Parafuso Sextavado"))
+                .andExpect(jsonPath("$[0].subtotal").value(50.00));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/listas/{id}/itens/{itemId} - Deve remover item com sucesso (204 No Content)")
+    void deveRemoverItemComSucesso() throws Exception {
+        doNothing().when(listaPedidoService).removerItem("lista-1", "item-1");
+
+        mockMvc.perform(delete("/api/listas/lista-1/itens/item-1"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("PUT /api/listas/{id}/desconto - Deve aplicar desconto fixo e retornar total líquido recalculado")
+    void deveAplicarDescontoComSucesso() throws Exception {
+        AplicarDescontoDTO dto = new AplicarDescontoDTO(new BigDecimal("50.00"));
+        ListaPedidoResponseDTO responseDTO = new ListaPedidoResponseDTO(
+                "lista-1", "emp-1", "Pedido", Instant.now(),
+                new BigDecimal("200.00"), new BigDecimal("50.00"), new BigDecimal("150.00")
+        );
+
+        when(listaPedidoService.aplicarDesconto(eq("lista-1"), any(AplicarDescontoDTO.class))).thenReturn(responseDTO);
+
+        mockMvc.perform(put("/api/listas/lista-1/desconto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.subtotalItens").value(200.00))
+                .andExpect(jsonPath("$.descontoReais").value(50.00))
+                .andExpect(jsonPath("$.totalLiquido").value(150.00));
+    }
+
+    @Test
+    @DisplayName("PUT /api/listas/{id}/desconto - Deve retornar 400 Bad Request se desconto for negativo")
+    void deveRetornarBadRequestQuandoDescontoNegativo() throws Exception {
+        AplicarDescontoDTO dto = new AplicarDescontoDTO(new BigDecimal("-10.00"));
+
+        when(listaPedidoService.aplicarDesconto(eq("lista-1"), any(AplicarDescontoDTO.class)))
+                .thenThrow(new ValidacaoException("Desconto em R$ não pode ser negativo."));
+
+        mockMvc.perform(put("/api/listas/lista-1/desconto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.mensagem").value("Desconto em R$ não pode ser negativo."));
     }
 }

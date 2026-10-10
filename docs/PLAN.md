@@ -51,7 +51,7 @@ flowchart TD
 ---
 
 ### Ciclo 2: Gestão de Itens, Isolamento e Motor de Cálculo Financeiro
-- **Status:** PENDENTE (Próxima iteração)
+- **Status:** CONCLUÍDO NESTA ITERAÇÃO
 - **Critérios de Aceite Atendidos:**
   - `CA-03`: Inserção de Item e Isolamento Estrito por Lista.
   - `CA-04`: Cálculo Correto do Subtotal dos Itens e da Lista.
@@ -63,16 +63,16 @@ flowchart TD
   - `RN-06`: Total Líquido Não-Negativo com Piso Zero.
   - Tabela da Seção 8: Cenários 1 a 9 da especificação.
 - **Entregas Técnicas:**
-  - Entidade `ItemPedido` vinculada à `ListaPedido`.
-  - `ItemPedidoRepository` com busca por `listaId`.
-  - Métodos em `ListaPedidoService` para adição, alteração, remoção de itens e atualização de desconto.
-  - Controladores REST para manipulação de itens e desconto.
-  - Bateria de testes unitários e de integração validando os 9 cenários da tabela da Seção 8.
+  - Entidade `ItemPedido` vinculada à `ListaPedido` com validações de domínio (descrição, quantidade $> 0$, preço unitário $\ge 0$).
+  - Repositório `ItemPedidoRepository` com busca e deleção por `listaId`.
+  - Métodos em `ListaPedidoService` para adição, listagem e remoção de itens com isolamento estrito, além de aplicação de desconto monetário fixo e cálculo dinâmico de total líquido com piso zero.
+  - Endpoints REST em `ListaPedidoController` para gestão de itens e desconto.
+  - Suíte completa de testes unitários e de camada web cobrindo `CA-03`, `CA-04`, `CA-05` e todos os 9 cenários da Seção 8.
 
 ---
 
 ### Ciclo 3: Exportação Canônica em Markdown
-- **Status:** PENDENTE
+- **Status:** PENDENTE (Próxima iteração)
 - **Critérios de Aceite Atendidos:**
   - `CA-06`: Exportação Completa Formatada em Markdown.
 - **Regras de Negócio Implementadas:**

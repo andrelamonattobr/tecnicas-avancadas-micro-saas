@@ -1,21 +1,11 @@
 package com.maas.pedidos_conectado.web;
 
 import com.maas.pedidos_conectado.service.ListaPedidoService;
-import com.maas.pedidos_conectado.web.dto.CriarListaPedidoDTO;
-import com.maas.pedidos_conectado.web.dto.ListaPedidoResponseDTO;
-import com.maas.pedidos_conectado.web.dto.RenomearListaPedidoDTO;
+import com.maas.pedidos_conectado.web.dto.*;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/listas")
@@ -53,6 +43,37 @@ public class ListaPedidoController {
             @PathVariable String id,
             @RequestBody RenomearListaPedidoDTO dto) {
         ListaPedidoResponseDTO atualizada = listaPedidoService.renomear(id, dto);
+        return ResponseEntity.ok(atualizada);
+    }
+
+    @PostMapping("/{id}/itens")
+    public ResponseEntity<ItemPedidoResponseDTO> adicionarItem(
+            @PathVariable String id,
+            @RequestBody CriarItemPedidoDTO dto) {
+        ItemPedidoResponseDTO itemCriado = listaPedidoService.adicionarItem(id, dto);
+        URI uri = URI.create("/api/listas/" + id + "/itens/" + itemCriado.getId());
+        return ResponseEntity.created(uri).body(itemCriado);
+    }
+
+    @GetMapping("/{id}/itens")
+    public ResponseEntity<List<ItemPedidoResponseDTO>> listarItens(@PathVariable String id) {
+        List<ItemPedidoResponseDTO> itens = listaPedidoService.listarItens(id);
+        return ResponseEntity.ok(itens);
+    }
+
+    @DeleteMapping("/{id}/itens/{itemId}")
+    public ResponseEntity<Void> removerItem(
+            @PathVariable String id,
+            @PathVariable String itemId) {
+        listaPedidoService.removerItem(id, itemId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/desconto")
+    public ResponseEntity<ListaPedidoResponseDTO> aplicarDesconto(
+            @PathVariable String id,
+            @RequestBody AplicarDescontoDTO dto) {
+        ListaPedidoResponseDTO atualizada = listaPedidoService.aplicarDesconto(id, dto);
         return ResponseEntity.ok(atualizada);
     }
 }
