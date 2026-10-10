@@ -1,0 +1,74 @@
+{
+  "hash": "da121774",
+  "configHash": "a68c0554",
+  "lockfileHash": "603aad4e",
+  "browserHash": "e6c069f9",
+  "optimized": {
+    "@angular/common": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
+      "file": "@angular_common.js",
+      "fileHash": "2202b0f1",
+      "needsInterop": false
+    },
+    "@angular/common/http": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
+      "file": "@angular_common_http.js",
+      "fileHash": "b4f13732",
+      "needsInterop": false
+    },
+    "@angular/core": {
+      "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
+      "file": "@angular_core.js",
+      "fileHash": "3f1edc69",
+      "needsInterop": false
+    },
+    "@angular/forms": {
+      "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
+      "file": "@angular_forms.js",
+      "fileHash": "b719e486",
+      "needsInterop": false
+    },
+    "@angular/platform-browser": {
+      "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
+      "file": "@angular_platform-browser.js",
+      "fileHash": "eb7b4e67",
+      "needsInterop": false
+    },
+    "@angular/router": {
+      "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
+      "file": "@angular_router.js",
+      "fileHash": "1cc750cc",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "_xhr-chunk-EeiiA_L8": {
+      "file": "_xhr-chunk-EeiiA_L8.js",
+      "isDynamicEntry": false
+    },
+    "common-vMp9plNg": {
+      "file": "common-vMp9plNg.js",
+      "isDynamicEntry": false
+    },
+    "core-C4Mibiy-": {
+      "file": "core-C4Mibiy-.js",
+      "isDynamicEntry": false
+    },
+    "createObject-BFBww21R": {
+      "file": "createObject-BFBww21R.js",
+      "isDynamicEntry": false
+    },
+    "from-Du2qsP6n": {
+      "file": "from-Du2qsP6n.js",
+      "isDynamicEntry": false
+    },
+    "http-_jrCXJ17": {
+      "file": "http-_jrCXJ17.js",
+      "isDynamicEntry": false
+    },
+    "platform-browser-gIXHoPUv": {
+      "file": "platform-browser-gIXHoPUv.js",
+      "isDynamicEntry": false
+    }
+  }
+}

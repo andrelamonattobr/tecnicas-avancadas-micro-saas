@@ -86,22 +86,21 @@ flowchart TD
 ---
 
 ### Ciclo 4: Frontend Angular - Telas e Integração
-- **Status:** PENDENTE (Próxima iteração)
-- **Escopo:**
-  - Serviços Angular em `pedidos-conectado` (`FornecedorService`, `ListaPedidoService`).
-  - Componentes Standalone:
-    - Tela de Cadastro e Seleção de Fornecedores.
-    - Tela de Gestão de Listas de Pedidos (criação e renomeação em tempo real).
-    - Painel de Itens do Pedido (lançamento, listagem e exclusão).
-    - Resumo Financeiro reativo (subtotal, campo de desconto em R$ e total líquido com piso zero).
-    - Modal / Área de visualização e cópia do relatório Markdown.
-  - Testes unitários com Vitest / Angular Testing Utilities.
+- **Status:** CONCLUÍDO NESTA ITERAÇÃO
+- **Critérios de Aceite Atendidos:**
+  - `CA-01` a `CA-06`: Interface gráfica interativa para o operador de compras cobrindo todos os critérios da spec.
+- **Entregas Técnicas:**
+  - Modelos TypeScript: `Fornecedor`, `CriarFornecedorDTO`, `ListaPedido`, `CriarListaPedidoDTO`, `RenomearListaPedidoDTO`, `ItemPedido`, `CriarItemPedidoDTO`, `AplicarDescontoDTO`.
+  - Serviços Angular: `FornecedorService` e `ListaPedidoService` integrados à API Spring Boot via `HttpClient`.
+  - Componente Standalone: `PedidosComponent` (`src/app/components/pedidos/pedidos.component.*`) com telas de Fornecedor, Listas de Pedidos, Lançamento de Itens, Resumo Financeiro reativo com piso zero e Exportação Markdown.
+  - Configuração de roteamento em `app.routes.ts` e injeção de `provideHttpClient()` em `app.config.ts`.
+  - Suíte de testes unitários Angular para serviços e componentes (`fornecedor.service.spec.ts`, `lista-pedido.service.spec.ts`, `pedidos.component.spec.ts`, `app.spec.ts`).
 
 ---
 
 ### Ciclo 5: Homologação Integrada e Revisão Final
-- **Status:** PENDENTE
+- **Status:** PENDENTE (Próxima iteração)
 - **Escopo:**
   - Testes end-to-end de fluxo completo.
   - Validação de conformidade contra todos os itens do anti-escopo da Seção 2.2.
-  - Relatório final de cobertura e auditoria estática.
+  - Relatório final de cobertura e auditoria estática global.
