@@ -99,8 +99,19 @@ flowchart TD
 ---
 
 ### Ciclo 5: Homologação Integrada e Revisão Final
-- **Status:** PENDENTE (Próxima iteração)
-- **Escopo:**
-  - Testes end-to-end de fluxo completo.
-  - Validação de conformidade contra todos os itens do anti-escopo da Seção 2.2.
-  - Relatório final de cobertura e auditoria estática global.
+- **Status:** CONCLUÍDO NESTA ITERAÇÃO
+- **Entregas Técnicas:**
+  - Teste de homologação end-to-end completo em `FluxoCompletoE2ETest.java` validando em cadeia transacional real:
+    - Criação de fornecedor e criação de lista vinculada com status financeiro inicial zerado (`CA-01`).
+    - Renomeação dinâmica de título preservando IDs e fornecedores (`CA-02`).
+    - Isolamento absoluto de itens entre listas distintas (`CA-03`).
+    - Cálculo determinístico de subtotais de itens e subtotal geral (`CA-04`).
+    - Aplicação de desconto monetário fixo e respeito estrito ao piso zero ($\max(0, \text{Subtotal} - \text{Desconto})$) (`CA-05`).
+    - Exportação canônica estruturada em Markdown com dados de cabeçalho, fornecedor, tabela e sumário financeiro (`CA-06`).
+  - Auditoria de Anti-Escopo (Seção 2.2):
+    1. Sem catálogo global de produtos: validado.
+    2. Sem reaproveitamento de itens entre listas: validado.
+    3. Sem desconto percentual: validado (apenas valor fixo em R$).
+    4. Sem saldo negativo: validado (piso de R$ 0,00 garantido).
+    5. Sem complexidades fora do escopo (estoque, fiscal, pagamentos, logins externos): validado.
+  - Especificação 001 100% implementada e coberta por suítes de testes automatizados no backend e no frontend.
