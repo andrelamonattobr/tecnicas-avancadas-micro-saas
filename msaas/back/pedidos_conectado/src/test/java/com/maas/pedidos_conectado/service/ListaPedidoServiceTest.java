@@ -36,6 +36,9 @@ class ListaPedidoServiceTest {
     @Mock
     private ItemPedidoRepository itemPedidoRepository;
 
+    @Mock
+    private ExportacaoMarkdownService exportacaoMarkdownService;
+
     @InjectMocks
     private ListaPedidoService listaPedidoService;
 
@@ -396,5 +399,31 @@ class ListaPedidoServiceTest {
         );
         assertTrue(ex.getMessage().contains("não pertence à lista"));
         verify(itemPedidoRepository, never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("CA-06 / RN-07: Deve exportar markdown delegando para ExportacaoMarkdownService com totais calculados")
+    void deveExportarMarkdownComSucesso_CA06() {
+        String listaId = "lista-exp";
+        String fornecedorId = "forn-exp";
+        com.maas.pedidos_conectado.domain.Fornecedor fornecedor = new com.maas.pedidos_conectado.domain.Fornecedor(
+                fornecedorId, "Alimentos do Campo S.A.", "Alimentos", "12.345.678/0001-99", "contato@alimentos.com"
+        );
+        ListaPedido lista = new ListaPedido(listaId, fornecedorId, "Pedido Mensal", Instant.now(), new BigDecimal("10.00"));
+        ItemPedido item = new ItemPedido("i1", listaId, "Arroz", BigDecimal.ONE, new BigDecimal("80.00"));
+
+        when(listaPedidoRepository.findById(listaId)).thenReturn(Optional.of(lista));
+        when(fornecedorRepository.findById(fornecedorId)).thenReturn(Optional.of(fornecedor));
+        when(itemPedidoRepository.findByListaId(listaId)).thenReturn(List.of(item));
+
+        when(exportacaoMarkdownService.gerarMarkdown(eq(lista), eq(fornecedor), eq(List.of(item)), any(), any()))
+                .thenReturn("# Pedido de Compra: Pedido Mensal\n...");
+
+        String resultado = listaPedidoService.exportarMarkdown(listaId);
+
+        assertNotNull(resultado);
+        assertTrue(resultado.startsWith("# Pedido de Compra:"));
+        verify(exportacaoMarkdownService, times(1))
+                .gerarMarkdown(eq(lista), eq(fornecedor), eq(List.of(item)), any(), any());
     }
 }

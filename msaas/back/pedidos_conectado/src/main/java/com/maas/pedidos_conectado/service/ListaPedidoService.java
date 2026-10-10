@@ -20,13 +20,16 @@ public class ListaPedidoService {
     private final ListaPedidoRepository listaPedidoRepository;
     private final FornecedorRepository fornecedorRepository;
     private final ItemPedidoRepository itemPedidoRepository;
+    private final ExportacaoMarkdownService exportacaoMarkdownService;
 
     public ListaPedidoService(ListaPedidoRepository listaPedidoRepository,
                               FornecedorRepository fornecedorRepository,
-                              ItemPedidoRepository itemPedidoRepository) {
+                              ItemPedidoRepository itemPedidoRepository,
+                              ExportacaoMarkdownService exportacaoMarkdownService) {
         this.listaPedidoRepository = listaPedidoRepository;
         this.fornecedorRepository = fornecedorRepository;
         this.itemPedidoRepository = itemPedidoRepository;
+        this.exportacaoMarkdownService = exportacaoMarkdownService;
     }
 
     @Transactional
@@ -203,6 +206,24 @@ public class ListaPedidoService {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         }
         return liquido.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    @Transactional(readOnly = true)
+    public String exportarMarkdown(String listaId) {
+        if (listaId == null || listaId.isBlank()) {
+            throw new ValidacaoException("ID da lista não informado.");
+        }
+        ListaPedido lista = listaPedidoRepository.findById(listaId)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Lista de pedido não encontrada com ID: " + listaId));
+
+        com.maas.pedidos_conectado.domain.Fornecedor fornecedor = fornecedorRepository.findById(lista.getEmpresaId())
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Empresa fornecedora vinculada não encontrada com ID: " + lista.getEmpresaId()));
+
+        List<ItemPedido> itens = itemPedidoRepository.findByListaId(listaId);
+        BigDecimal subtotalGeral = calcularSubtotalGeral(itens);
+        BigDecimal totalLiquido = calcularTotalLiquido(subtotalGeral, lista.getDescontoReais());
+
+        return exportacaoMarkdownService.gerarMarkdown(lista, fornecedor, itens, subtotalGeral, totalLiquido);
     }
 
     private ListaPedidoResponseDTO montarResponseDTO(ListaPedido lista) {

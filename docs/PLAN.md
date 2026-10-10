@@ -72,20 +72,21 @@ flowchart TD
 ---
 
 ### Ciclo 3: Exportação Canônica em Markdown
-- **Status:** PENDENTE (Próxima iteração)
+- **Status:** CONCLUÍDO NESTA ITERAÇÃO
 - **Critérios de Aceite Atendidos:**
   - `CA-06`: Exportação Completa Formatada em Markdown.
 - **Regras de Negócio Implementadas:**
-  - `RN-07`: Estrutura canônica de cabeçalho, dados do fornecedor, tabela de itens e sumário financeiro.
+  - `RN-07`: Estrutura canônica de cabeçalho (título e data de criação), informações da empresa fornecedora (razão social, CNPJ e contato), tabela com colunas (`Item`, `Descrição`, `Qtd`, `Preço Unitário (R$)`, `Subtotal (R$)`) e resumo financeiro discriminado (`Subtotal dos Itens`, `Desconto Aplicado (R$)`, `Total Final Líquido (R$)`).
 - **Entregas Técnicas:**
-  - Serviço `ExportacaoMarkdownService`.
-  - Endpoint REST `GET /api/listas/{id}/exportar-markdown`.
-  - Testes automatizados validando a formatação textual exata conforme especificação.
+  - Serviço `ExportacaoMarkdownService` com formatação monetária em padrão brasileiro (`R$ X,XX`) e determinação de linhas da tabela.
+  - Método `exportarMarkdown()` em `ListaPedidoService`.
+  - Endpoint REST `GET /api/listas/{id}/exportar-markdown` com Content-Type `text/markdown; charset=UTF-8`.
+  - Testes automatizados unitários e de controlador validando o critério `CA-06`, `RN-07`, listas vazias e listas com múltiplos itens.
 
 ---
 
 ### Ciclo 4: Frontend Angular - Telas e Integração
-- **Status:** PENDENTE
+- **Status:** PENDENTE (Próxima iteração)
 - **Escopo:**
   - Serviços Angular em `pedidos-conectado` (`FornecedorService`, `ListaPedidoService`).
   - Componentes Standalone:

@@ -210,4 +210,16 @@ class ListaPedidoControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.mensagem").value("Desconto em R$ não pode ser negativo."));
     }
+
+    @Test
+    @DisplayName("GET /api/listas/{id}/exportar-markdown - Deve retornar texto em formato Markdown")
+    void deveExportarMarkdownEndpoint() throws Exception {
+        String markdownExemplo = "# Pedido de Compra: Teste\n**Data:** 10/10/2026";
+        when(listaPedidoService.exportarMarkdown("lista-1")).thenReturn(markdownExemplo);
+
+        mockMvc.perform(get("/api/listas/lista-1/exportar-markdown"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("text/markdown"))
+                .andExpect(content().string(markdownExemplo));
+    }
 }

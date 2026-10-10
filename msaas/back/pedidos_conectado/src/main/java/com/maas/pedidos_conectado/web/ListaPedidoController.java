@@ -76,4 +76,12 @@ public class ListaPedidoController {
         ListaPedidoResponseDTO atualizada = listaPedidoService.aplicarDesconto(id, dto);
         return ResponseEntity.ok(atualizada);
     }
+
+    @GetMapping(value = "/{id}/exportar-markdown", produces = {org.springframework.http.MediaType.TEXT_PLAIN_VALUE, "text/markdown"})
+    public ResponseEntity<String> exportarMarkdown(@PathVariable String id) {
+        String markdown = listaPedidoService.exportarMarkdown(id);
+        return ResponseEntity.ok()
+                .contentType(org.springframework.http.MediaType.parseMediaType("text/markdown; charset=UTF-8"))
+                .body(markdown);
+    }
 }
