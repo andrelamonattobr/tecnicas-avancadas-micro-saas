@@ -13,3 +13,6 @@ npm-debug.log*
 # Arquivos do sistema operacional
 .DS_Store
 Thumbs.db
+
+#Arquivo auxiliar para escrever mensagens de commmit
+commit-msg.txt
