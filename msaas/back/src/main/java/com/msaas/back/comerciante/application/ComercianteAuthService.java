@@ -37,32 +37,25 @@ public class ComercianteAuthService {
         }
 
         Comerciante.validarSenhaBruta(request.senha());
+        String emailNormalizado = Comerciante.validarENormalizarEmail(request.email());
 
-        if (request.email() == null || request.email().isBlank()) {
-            throw new RegraNegocioException("O e-mail é obrigatório");
-        }
-        String emailNormalizado = request.email().trim().toLowerCase();
         if (comercianteRepository.existePorEmailIgnoreCase(emailNormalizado)) {
             throw new RegraNegocioException("Este endereço de e-mail já está em uso");
         }
 
-        String documentoHigienizado = Comerciante.higienizarDigitos(request.documento());
+        String documentoHigienizado = Comerciante.higienizarEValidarDocumento(request.documento());
         if (documentoHigienizado != null && comercianteRepository.existePorDocumento(documentoHigienizado)) {
             throw new RegraNegocioException("Este documento já está em uso");
         }
 
-        String senhaHash = passwordEncoder.encode(request.senha());
-
-        Comerciante novo = new Comerciante(
+        Comerciante salvo = comercianteRepository.salvar(new Comerciante(
                 request.nomeResponsavel(),
                 request.nomeEstabelecimento(),
                 emailNormalizado,
-                senhaHash,
+                passwordEncoder.encode(request.senha()),
                 request.telefone(),
                 documentoHigienizado
-        );
-
-        Comerciante salvo = comercianteRepository.salvar(novo);
+        ));
 
         return new RegistroComercianteResponse(
                 salvo.getId(),
@@ -80,19 +73,15 @@ public class ComercianteAuthService {
 
         Comerciante comerciante = comercianteRepository
                 .buscarPorEmailIgnoreCase(request.email().trim())
+                .filter(Comerciante::isAtivo)
+                .filter(c -> passwordEncoder.matches(request.senha(), c.getSenha()))
                 .orElseThrow(() -> new CredenciaisInvalidasException("E-mail ou senha inválidos"));
-
-        if (!comerciante.isAtivo() || !passwordEncoder.matches(request.senha(), comerciante.getSenha())) {
-            throw new CredenciaisInvalidasException("E-mail ou senha inválidos");
-        }
-
-        String token = jwtService.gerarToken(comerciante);
 
         return new AuthResponse(
                 comerciante.getId(),
                 comerciante.getNomeEstabelecimento(),
                 comerciante.getEmail(),
-                token
+                jwtService.gerarToken(comerciante)
         );
     }
 }

@@ -48,9 +48,8 @@ public class Comerciante {
             String telefone,
             String documento
     ) {
-        String estabelecimentoLimpo = validarNomeEstabelecimento(nomeEstabelecimento);
-        this.nomeEstabelecimento = estabelecimentoLimpo;
-        this.nomeResponsavel = validarNomeResponsavel(nomeResponsavel, estabelecimentoLimpo);
+        this.nomeEstabelecimento = validarNomeEstabelecimento(nomeEstabelecimento);
+        this.nomeResponsavel = validarNomeResponsavel(nomeResponsavel, this.nomeEstabelecimento);
         this.email = validarENormalizarEmail(email);
         if (senhaHash == null || senhaHash.isBlank()) {
             throw new RegraNegocioException("A senha criptografada é obrigatória");
@@ -88,6 +87,39 @@ public class Comerciante {
         return apenasDigitos.isEmpty() ? null : apenasDigitos;
     }
 
+    public static String validarENormalizarEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new RegraNegocioException("O e-mail é obrigatório");
+        }
+        String normalizado = email.trim().toLowerCase();
+        if (normalizado.length() > 120 || !normalizado.contains("@") || !normalizado.contains(".")) {
+            throw new RegraNegocioException("Formato de e-mail inválido");
+        }
+        return normalizado;
+    }
+
+    public static String higienizarEValidarTelefone(String telefone) {
+        String digitos = higienizarDigitos(telefone);
+        if (digitos == null) {
+            return null;
+        }
+        if (digitos.length() != 10 && digitos.length() != 11) {
+            throw new RegraNegocioException("O telefone deve conter 10 ou 11 dígitos numéricos com DDD");
+        }
+        return digitos;
+    }
+
+    public static String higienizarEValidarDocumento(String documento) {
+        String digitos = higienizarDigitos(documento);
+        if (digitos == null) {
+            return null;
+        }
+        if (digitos.length() != 11 && digitos.length() != 14) {
+            throw new RegraNegocioException("O documento deve conter 11 dígitos (CPF) ou 14 dígitos (CNPJ)");
+        }
+        return digitos;
+    }
+
     private static String validarNomeEstabelecimento(String nomeEstabelecimento) {
         if (nomeEstabelecimento == null || nomeEstabelecimento.trim().length() < 2 || nomeEstabelecimento.trim().length() > 100) {
             throw new RegraNegocioException("O nome do estabelecimento deve ter entre 2 e 100 caracteres");
@@ -103,39 +135,6 @@ public class Comerciante {
             throw new RegraNegocioException("O nome do responsável deve ter entre 3 e 100 caracteres");
         }
         return candidato;
-    }
-
-    private static String validarENormalizarEmail(String email) {
-        if (email == null || email.isBlank()) {
-            throw new RegraNegocioException("O e-mail é obrigatório");
-        }
-        String normalizado = email.trim().toLowerCase();
-        if (normalizado.length() > 120 || !normalizado.contains("@") || !normalizado.contains(".")) {
-            throw new RegraNegocioException("Formato de e-mail inválido");
-        }
-        return normalizado;
-    }
-
-    private static String higienizarEValidarTelefone(String telefone) {
-        String digitos = higienizarDigitos(telefone);
-        if (digitos == null) {
-            return null;
-        }
-        if (digitos.length() != 10 && digitos.length() != 11) {
-            throw new RegraNegocioException("O telefone deve conter 10 ou 11 dígitos numéricos com DDD");
-        }
-        return digitos;
-    }
-
-    private static String higienizarEValidarDocumento(String documento) {
-        String digitos = higienizarDigitos(documento);
-        if (digitos == null) {
-            return null;
-        }
-        if (digitos.length() != 11 && digitos.length() != 14) {
-            throw new RegraNegocioException("O documento deve conter 11 dígitos (CPF) ou 14 dígitos (CNPJ)");
-        }
-        return digitos;
     }
 
     public void inativar() {
