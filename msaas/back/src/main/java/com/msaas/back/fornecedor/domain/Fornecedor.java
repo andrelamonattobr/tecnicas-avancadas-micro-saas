@@ -59,12 +59,8 @@ public class Fornecedor {
             throw new RegraNegocioException("O comerciante autenticado é obrigatório");
         }
         this.comerciante = comerciante;
-        this.nome = validarNome(nome);
-        this.nomeContato = validarTextoOpcional(nomeContato, 2, 80, "nome do contato");
-        this.telefoneWhatsapp = higienizarEValidarTelefoneWhatsapp(telefoneWhatsapp);
         this.documento = Comerciante.higienizarEValidarDocumento(documento);
-        this.email = validarEmailOpcional(email);
-        this.categoria = validarTextoOpcional(categoria, 2, 60, "categoria");
+        aplicarDadosCadastrais(nome, nomeContato, telefoneWhatsapp, email, categoria);
         this.ativo = true;
         this.dataCadastro = LocalDateTime.now();
     }
@@ -81,7 +77,16 @@ public class Fornecedor {
         if (docHigienizado != null && !Objects.equals(this.documento, docHigienizado)) {
             throw new RegraNegocioException("O documento do fornecedor não pode ser alterado após o cadastro");
         }
+        aplicarDadosCadastrais(nome, nomeContato, telefoneWhatsapp, email, categoria);
+    }
 
+    private void aplicarDadosCadastrais(
+            String nome,
+            String nomeContato,
+            String telefoneWhatsapp,
+            String email,
+            String categoria
+    ) {
         this.nome = validarNome(nome);
         this.nomeContato = validarTextoOpcional(nomeContato, 2, 80, "nome do contato");
         this.telefoneWhatsapp = higienizarEValidarTelefoneWhatsapp(telefoneWhatsapp);
@@ -116,10 +121,7 @@ public class Fornecedor {
     }
 
     private static String validarEmailOpcional(String email) {
-        if (email == null || email.isBlank()) {
-            return null;
-        }
-        return Comerciante.validarENormalizarEmail(email);
+        return (email == null || email.isBlank()) ? null : Comerciante.validarENormalizarEmail(email);
     }
 
     public void inativar() {

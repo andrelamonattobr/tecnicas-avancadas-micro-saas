@@ -20,6 +20,9 @@ import java.util.List;
 @Service
 public class FornecedorService {
 
+    private static final String MSG_TELEFONE_DUPLICADO =
+            "Telefone de WhatsApp já cadastrado para outro fornecedor da sua conta";
+
     private final FornecedorRepository fornecedorRepository;
     private final ComercianteRepository comercianteRepository;
 
@@ -42,7 +45,7 @@ public class FornecedorService {
 
         String telefoneHigienizado = Fornecedor.higienizarEValidarTelefoneWhatsapp(request.telefoneWhatsapp());
         if (fornecedorRepository.existePorComercianteIdETelefoneWhatsapp(comercianteId, telefoneHigienizado)) {
-            throw new RegraNegocioException("Telefone de WhatsApp já cadastrado para outro fornecedor da sua conta");
+            throw new RegraNegocioException(MSG_TELEFONE_DUPLICADO);
         }
 
         String documentoHigienizado = Comerciante.higienizarEValidarDocumento(request.documento());
@@ -50,7 +53,7 @@ public class FornecedorService {
             throw new RegraNegocioException("Documento já cadastrado para outro fornecedor da sua conta");
         }
 
-        Fornecedor novo = new Fornecedor(
+        Fornecedor salvo = fornecedorRepository.salvar(new Fornecedor(
                 comerciante,
                 request.nome(),
                 request.nomeContato(),
@@ -58,9 +61,8 @@ public class FornecedorService {
                 documentoHigienizado,
                 request.email(),
                 request.categoria()
-        );
+        ));
 
-        Fornecedor salvo = fornecedorRepository.salvar(novo);
         return FornecedorResponse.de(salvo, "Fornecedor cadastrado com sucesso");
     }
 
@@ -99,8 +101,7 @@ public class FornecedorService {
 
     @Transactional(readOnly = true)
     public FornecedorResponse buscarPorId(Long comercianteId, Long fornecedorId) {
-        Fornecedor fornecedor = buscarDoComerciante(comercianteId, fornecedorId);
-        return FornecedorResponse.de(fornecedor, null);
+        return FornecedorResponse.de(buscarDoComerciante(comercianteId, fornecedorId), null);
     }
 
     @Transactional
@@ -110,14 +111,14 @@ public class FornecedorService {
         }
 
         Fornecedor fornecedor = buscarDoComerciante(comercianteId, fornecedorId);
-
         String telefoneHigienizado = Fornecedor.higienizarEValidarTelefoneWhatsapp(request.telefoneWhatsapp());
+
         if (fornecedorRepository.existePorComercianteIdETelefoneWhatsappExcluindoId(
                 comercianteId,
                 telefoneHigienizado,
                 fornecedorId
         )) {
-            throw new RegraNegocioException("Telefone de WhatsApp já cadastrado para outro fornecedor da sua conta");
+            throw new RegraNegocioException(MSG_TELEFONE_DUPLICADO);
         }
 
         fornecedor.atualizarDados(
@@ -129,24 +130,21 @@ public class FornecedorService {
                 request.categoria()
         );
 
-        Fornecedor salvo = fornecedorRepository.salvar(fornecedor);
-        return FornecedorResponse.de(salvo, "Fornecedor atualizado com sucesso");
+        return FornecedorResponse.de(fornecedorRepository.salvar(fornecedor), "Fornecedor atualizado com sucesso");
     }
 
     @Transactional
     public FornecedorResponse inativar(Long comercianteId, Long fornecedorId) {
         Fornecedor fornecedor = buscarDoComerciante(comercianteId, fornecedorId);
         fornecedor.inativar();
-        Fornecedor salvo = fornecedorRepository.salvar(fornecedor);
-        return FornecedorResponse.de(salvo, "Fornecedor inativado com sucesso");
+        return FornecedorResponse.de(fornecedorRepository.salvar(fornecedor), "Fornecedor inativado com sucesso");
     }
 
     @Transactional
     public FornecedorResponse reativar(Long comercianteId, Long fornecedorId) {
         Fornecedor fornecedor = buscarDoComerciante(comercianteId, fornecedorId);
         fornecedor.reativar();
-        Fornecedor salvo = fornecedorRepository.salvar(fornecedor);
-        return FornecedorResponse.de(salvo, "Fornecedor reativado com sucesso");
+        return FornecedorResponse.de(fornecedorRepository.salvar(fornecedor), "Fornecedor reativado com sucesso");
     }
 
     private Fornecedor buscarDoComerciante(Long comercianteId, Long fornecedorId) {
