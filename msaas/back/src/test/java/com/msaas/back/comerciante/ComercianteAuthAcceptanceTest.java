@@ -9,15 +9,19 @@ import com.msaas.back.comerciante.domain.Comerciante;
 import com.msaas.back.comerciante.domain.ComercianteRepository;
 import com.msaas.back.shared.domain.exception.CredenciaisInvalidasException;
 import com.msaas.back.shared.domain.exception.RegraNegocioException;
+import com.msaas.back.shared.infrastructure.security.ComercianteAutenticado;
+import com.msaas.back.shared.infrastructure.security.JwtService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@Transactional
 class ComercianteAuthAcceptanceTest {
 
     @Autowired
@@ -29,6 +33,9 @@ class ComercianteAuthAcceptanceTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtService jwtService;
+
     @Test
     @DisplayName("CA-01: Cadastro de conta de comerciante com dados válidos")
     void deveCadastrarComercianteComDadosValidos() {
@@ -37,19 +44,22 @@ class ComercianteAuthAcceptanceTest {
                 "Mercadinho São José",
                 "joao@mercadinho.com.br",
                 "Compra123",
-                "64999991111",
-                "12345678901"
+                "(64) 99999-1111",
+                "123.456.789-01"
         );
 
         RegistroComercianteResponse response = comercianteAuthService.registrar(request);
 
         assertNotNull(response);
+        assertNotNull(response.id());
         assertEquals("Conta criada com sucesso", response.mensagem());
 
         Comerciante salvo = comercianteRepository.buscarPorEmailIgnoreCase("joao@mercadinho.com.br")
                 .orElseThrow();
         assertTrue(salvo.isAtivo());
         assertNotNull(salvo.getDataCadastro());
+        assertEquals("64999991111", salvo.getTelefone());
+        assertEquals("12345678901", salvo.getDocumento());
         assertNotEquals("Compra123", salvo.getSenha());
         assertTrue(passwordEncoder.matches("Compra123", salvo.getSenha()));
     }
@@ -81,7 +91,7 @@ class ComercianteAuthAcceptanceTest {
     }
 
     @Test
-    @DisplayName("CA-03: Login realizado com sucesso por comerciante ativo")
+    @DisplayName("CA-03: Login realizado com sucesso por comerciante ativo e emissão de JWT válido")
     void deveRealizarLoginComSucessoPorComercianteAtivo() {
         comercianteAuthService.registrar(new RegistroComercianteRequest(
                 "João Silva",
@@ -101,11 +111,15 @@ class ComercianteAuthAcceptanceTest {
         assertNotNull(auth.token());
         assertFalse(auth.token().isBlank());
         assertEquals("Mercadinho São José", auth.nomeEstabelecimento());
+
+        ComercianteAutenticado autenticado = jwtService.validarToken(auth.token()).orElseThrow();
+        assertEquals(auth.id(), autenticado.id());
+        assertEquals("joao@mercadinho.com.br", autenticado.email());
     }
 
     @Test
-    @DisplayName("CA-04: Bloqueio de login com credenciais incorretas")
-    void deveBloquearLoginComCredenciaisIncorretas() {
+    @DisplayName("CA-04: Bloqueio de login com credenciais incorretas ou conta inativa")
+    void deveBloquearLoginComCredenciaisIncorretasOuContaInativa() {
         comercianteAuthService.registrar(new RegistroComercianteRequest(
                 "João Silva",
                 "Mercadinho São José",
@@ -115,20 +129,32 @@ class ComercianteAuthAcceptanceTest {
                 null
         ));
 
-        CredenciaisInvalidasException ex = assertThrows(CredenciaisInvalidasException.class, () ->
+        CredenciaisInvalidasException exSenhaIncorreta = assertThrows(CredenciaisInvalidasException.class, () ->
                 comercianteAuthService.autenticar(new LoginRequest(
                         "joao@mercadinho.com.br",
                         "SenhaErrada99"
                 ))
         );
+        assertEquals("E-mail ou senha inválidos", exSenhaIncorreta.getMessage());
 
-        assertEquals("E-mail ou senha inválidos", ex.getMessage());
+        Comerciante comerciante = comercianteRepository.buscarPorEmailIgnoreCase("joao@mercadinho.com.br")
+                .orElseThrow();
+        comerciante.inativar();
+        comercianteRepository.salvar(comerciante);
+
+        CredenciaisInvalidasException exInativo = assertThrows(CredenciaisInvalidasException.class, () ->
+                comercianteAuthService.autenticar(new LoginRequest(
+                        "joao@mercadinho.com.br",
+                        "Compra123"
+                ))
+        );
+        assertEquals("E-mail ou senha inválidos", exInativo.getMessage());
     }
 
     @Test
     @DisplayName("CA-05: Rejeição de senha fraca no momento do cadastro")
     void deveRejeitarSenhaFracaNoCadastro() {
-        RegraNegocioException ex = assertThrows(RegraNegocioException.class, () ->
+        RegraNegocioException exCurta = assertThrows(RegraNegocioException.class, () ->
                 comercianteAuthService.registrar(new RegistroComercianteRequest(
                         "João Silva",
                         "Mercadinho São José",
@@ -138,7 +164,18 @@ class ComercianteAuthAcceptanceTest {
                         null
                 ))
         );
+        assertEquals("A senha deve ter no mínimo 8 caracteres, incluindo letras e números", exCurta.getMessage());
 
-        assertEquals("A senha deve ter no mínimo 8 caracteres, incluindo letras e números", ex.getMessage());
+        RegraNegocioException exSemNumero = assertThrows(RegraNegocioException.class, () ->
+                comercianteAuthService.registrar(new RegistroComercianteRequest(
+                        "João Silva",
+                        "Mercadinho São José",
+                        "novo2@mercadinho.com.br",
+                        "ApenasLetras",
+                        null,
+                        null
+                ))
+        );
+        assertEquals("A senha deve ter no mínimo 8 caracteres, incluindo letras e números", exSemNumero.getMessage());
     }
 }
