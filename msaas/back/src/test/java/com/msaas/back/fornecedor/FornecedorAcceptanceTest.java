@@ -8,15 +8,18 @@ import com.msaas.back.fornecedor.application.dto.FornecedorCreateRequest;
 import com.msaas.back.fornecedor.application.dto.FornecedorResponse;
 import com.msaas.back.fornecedor.application.dto.FornecedorUpdateRequest;
 import com.msaas.back.fornecedor.application.dto.PaginaFornecedorResponse;
+import com.msaas.back.shared.domain.exception.RecursoNaoEncontradoException;
 import com.msaas.back.shared.domain.exception.RegraNegocioException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@Transactional
 class FornecedorAcceptanceTest {
 
     @Autowired
@@ -40,7 +43,7 @@ class FornecedorAcceptanceTest {
     @Test
     @DisplayName("CA-01: Cadastro de fornecedor com higienização automática de máscara")
     void deveCadastrarFornecedorComHigienizacaoAutomatica() {
-        Long joaoId = criarComerciante("João", "joao.forn1@mercadinho.com.br");
+        Long joaoId = criarComerciante("João", "joao@mercadinho.com.br");
 
         FornecedorResponse response = fornecedorService.criar(joaoId, new FornecedorCreateRequest(
                 "Distribuidora Central",
@@ -56,13 +59,14 @@ class FornecedorAcceptanceTest {
         assertEquals("64999991234", response.telefoneWhatsapp());
         assertEquals("12345678000199", response.documento());
         assertTrue(response.ativo());
+        assertNotNull(response.dataCadastro());
         assertEquals("Fornecedor cadastrado com sucesso", response.mensagem());
     }
 
     @Test
     @DisplayName("CA-02: Rejeição de telefone duplicado para o mesmo comerciante")
     void deveRejeitarTelefoneDuplicadoParaMesmoComerciante() {
-        Long joaoId = criarComerciante("João", "joao.forn2@mercadinho.com.br");
+        Long joaoId = criarComerciante("João", "joao@mercadinho.com.br");
 
         fornecedorService.criar(joaoId, new FornecedorCreateRequest(
                 "Distribuidora Central",
@@ -88,12 +92,12 @@ class FornecedorAcceptanceTest {
     }
 
     @Test
-    @DisplayName("CA-03: Permissão de mesmo fornecedor em contas de comerciantes diferentes (Isolamento Multi-Inquilino)")
-    void devePermitirMesmoFornecedorEmContasDiferentesEIsolarListagem() {
-        Long joaoId = criarComerciante("João", "joao.forn3@mercadinho.com.br");
-        Long mariaId = criarComerciante("Maria", "maria.forn3@mercadinho.com.br");
+    @DisplayName("CA-03: Isolamento Multi-Inquilino em cadastro, listagem e bloqueio de acesso cruzado")
+    void devePermitirMesmoFornecedorEmContasDiferentesEIsolarAcesso() {
+        Long joaoId = criarComerciante("João", "joao@mercadinho.com.br");
+        Long mariaId = criarComerciante("Maria", "maria@mercadinho.com.br");
 
-        fornecedorService.criar(joaoId, new FornecedorCreateRequest(
+        FornecedorResponse fornJoao = fornecedorService.criar(joaoId, new FornecedorCreateRequest(
                 "Distribuidora Central João",
                 "Carlos",
                 "64999991234",
@@ -102,7 +106,7 @@ class FornecedorAcceptanceTest {
                 "Bebidas"
         ));
 
-        FornecedorResponse respostaMaria = fornecedorService.criar(mariaId, new FornecedorCreateRequest(
+        FornecedorResponse fornMaria = fornecedorService.criar(mariaId, new FornecedorCreateRequest(
                 "Distribuidora Central Maria",
                 "Carlos",
                 "64999991234",
@@ -111,7 +115,7 @@ class FornecedorAcceptanceTest {
                 "Bebidas"
         ));
 
-        assertNotNull(respostaMaria.id());
+        assertNotNull(fornMaria.id());
 
         PaginaFornecedorResponse paginaJoao = fornecedorService.listarPaginado(joaoId, 0, 10, true, null);
         PaginaFornecedorResponse paginaMaria = fornecedorService.listarPaginado(mariaId, 0, 10, true, null);
@@ -121,12 +125,16 @@ class FornecedorAcceptanceTest {
 
         assertEquals(1, paginaMaria.totalElements());
         assertEquals("Distribuidora Central Maria", paginaMaria.content().getFirst().nome());
+
+        assertThrows(RecursoNaoEncontradoException.class, () ->
+                fornecedorService.inativar(mariaId, fornJoao.id())
+        );
     }
 
     @Test
-    @DisplayName("CA-04: Inativação e ocultação na listagem padrão paginada")
+    @DisplayName("CA-04: Inativação, ocultação na listagem padrão, filtro por inativos e reativação")
     void deveInativarFornecedorEOcultarNaListagemPadrao() {
-        Long joaoId = criarComerciante("João", "joao.forn4@mercadinho.com.br");
+        Long joaoId = criarComerciante("João", "joao@mercadinho.com.br");
 
         FornecedorResponse criado = fornecedorService.criar(joaoId, new FornecedorCreateRequest(
                 "Distribuidora Central",
@@ -145,27 +153,42 @@ class FornecedorAcceptanceTest {
         PaginaFornecedorResponse inativos = fornecedorService.listarPaginado(joaoId, 0, 10, false, null);
         assertEquals(1, inativos.totalElements());
         assertFalse(inativos.content().getFirst().ativo());
+
+        fornecedorService.reativar(joaoId, criado.id());
+        PaginaFornecedorResponse reativados = fornecedorService.listarPaginado(joaoId, 0, 10, true, null);
+        assertEquals(1, reativados.totalElements());
     }
 
     @Test
-    @DisplayName("Edição cadastral mantendo ID e Documento imutáveis")
-    void deveEditarFornecedorEBloquearAlteracaoDeDocumento() {
-        Long joaoId = criarComerciante("João", "joao.forn5@mercadinho.com.br");
+    @DisplayName("Edição mantendo ID e Documento imutáveis e paginação de resultados")
+    void deveEditarFornecedorBloquearAlteracaoDeDocumentoEPaginar() {
+        Long joaoId = criarComerciante("João", "joao@mercadinho.com.br");
 
         FornecedorResponse criado = fornecedorService.criar(joaoId, new FornecedorCreateRequest(
-                "Distribuidora Central",
+                "Fornecedor A",
                 "Carlos",
-                "64999991234",
+                "64999991111",
                 "12.345.678/0001-99",
                 "antigo@central.com.br",
                 "Bebidas"
         ));
+        fornecedorService.criar(joaoId, new FornecedorCreateRequest(
+                "Fornecedor B", "Ana", "64999992222", null, null, "Laticínios"
+        ));
+        fornecedorService.criar(joaoId, new FornecedorCreateRequest(
+                "Fornecedor C", "Beto", "64999993333", null, null, "Hortifrúti"
+        ));
+
+        PaginaFornecedorResponse primeiraPagina = fornecedorService.listarPaginado(joaoId, 0, 2, true, null);
+        assertEquals(2, primeiraPagina.content().size());
+        assertEquals(3, primeiraPagina.totalElements());
+        assertEquals(2, primeiraPagina.totalPages());
 
         FornecedorResponse atualizado = fornecedorService.atualizar(
                 joaoId,
                 criado.id(),
                 new FornecedorUpdateRequest(
-                        "Distribuidora Central Atualizada",
+                        "Fornecedor A Atualizado",
                         "Carlos Novo",
                         "(64) 98888-7777",
                         "12345678000199",
@@ -175,7 +198,7 @@ class FornecedorAcceptanceTest {
         );
 
         assertEquals(criado.id(), atualizado.id());
-        assertEquals("Distribuidora Central Atualizada", atualizado.nome());
+        assertEquals("Fornecedor A Atualizado", atualizado.nome());
         assertEquals("64988887777", atualizado.telefoneWhatsapp());
         assertEquals("12345678000199", atualizado.documento());
 
@@ -184,7 +207,7 @@ class FornecedorAcceptanceTest {
                         joaoId,
                         criado.id(),
                         new FornecedorUpdateRequest(
-                                "Distribuidora Central Atualizada",
+                                "Fornecedor A Atualizado",
                                 "Carlos Novo",
                                 "64988887777",
                                 "99999999000199",
