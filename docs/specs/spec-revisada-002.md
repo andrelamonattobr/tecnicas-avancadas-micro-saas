@@ -38,7 +38,7 @@ Permitir que o comerciante autenticado cadastre, consulte, pesquise, edite e ger
 comerciante:      referência a Comerciante (spec-revisada-001), obrigatório, preenchido automaticamente com o comerciante autenticado
 nome:             texto, obrigatório, não único, 3 a 100 caracteres (nome fantasia ou razão social do fornecedor)
 nomeContato:      texto, opcional, não único, 2 a 80 caracteres (nome do vendedor ou representante comercial)
-telefoneWhatsapp: texto, obrigatório, único por comerciante, 10 ou 11 dígitos numéricos com DDD (armazenado sem máscara, ex.: 64999991234)
+telefoneWhatsapp: texto, obrigatório, não único por comerciante, 10 ou 11 dígitos numéricos com DDD (armazenado sem máscara, ex.: 64999991234)
 documento:        texto, opcional, único por comerciante quando informado, 11 dígitos (CPF) ou 14 dígitos (CNPJ) numéricos sem máscara
 email:            texto, opcional, não único, formato válido de e-mail, até 120 caracteres
 categoria:        texto, opcional, não único, 2 a 60 caracteres (ex.: Bebidas, Hortifrúti, Embalagens)
