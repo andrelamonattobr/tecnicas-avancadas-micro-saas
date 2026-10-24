@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { AuthService } from '../../comerciante/application/auth.service';
-import { TokenStorageService } from '../../../core/auth/token-storage.service';
+import { AuthService } from '../../../comerciante/application/auth.service';
+import { TokenStorageService } from '../../../../core/auth/token-storage.service';
 
 @Component({
   selector: 'app-aplicacao-layout',
