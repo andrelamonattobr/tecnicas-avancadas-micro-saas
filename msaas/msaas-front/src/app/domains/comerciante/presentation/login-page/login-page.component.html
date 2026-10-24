@@ -1,0 +1,51 @@
+<div class="auth-page">
+  <header class="auth-header">
+    <a routerLink="/" class="brand">MSaaS Compras</a>
+    <a routerLink="/registro" class="btn btn-outline">Criar Conta</a>
+  </header>
+
+  <main class="auth-main">
+    <section class="auth-card">
+      <h1>Entrar na Conta</h1>
+      <p class="subtitle">Informe o e-mail e a senha do seu estabelecimento.</p>
+
+      @if (erro()) {
+        <div class="alert alert-error">{{ erro() }}</div>
+      }
+
+      <form (ngSubmit)="submeter()">
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            [(ngModel)]="email"
+            placeholder="joao@mercadinho.com.br"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input
+            id="senha"
+            name="senha"
+            type="password"
+            [(ngModel)]="senha"
+            placeholder="Digite sua senha"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="carregando()">
+          {{ carregando() ? 'Autenticando...' : 'Entrar' }}
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Ainda não possui conta? <a routerLink="/registro">Registre seu estabelecimento</a>
+      </div>
+    </section>
+  </main>
+</div>

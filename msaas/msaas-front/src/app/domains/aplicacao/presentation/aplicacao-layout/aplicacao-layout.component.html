@@ -1,0 +1,35 @@
+<div class="app-shell">
+  <header class="app-topbar">
+    <div class="topbar-left">
+      <button
+        type="button"
+        class="hamburger-btn"
+        (click)="alternarMenu()"
+        aria-label="Alternar menu de funcionalidades"
+      >
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+      <span class="brand">MSaaS Compras</span>
+    </div>
+
+    <div class="topbar-right">
+      <span class="estabelecimento-nome">{{ nomeEstabelecimento() }}</span>
+      <button type="button" class="btn btn-outline btn-sm" (click)="sair()">Sair</button>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <aside class="sidebar-menu" [class.collapsed]="!menuAberto()">
+      <div class="menu-title">Funcionalidades</div>
+      <nav class="menu-list">
+        <!-- Menu de funcionalidades inicialmente vazio na Spec 001 -->
+      </nav>
+    </aside>
+
+    <main class="main-workspace">
+      <router-outlet />
+    </main>
+  </div>
+</div>

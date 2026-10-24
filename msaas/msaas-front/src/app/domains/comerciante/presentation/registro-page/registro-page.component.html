@@ -1,0 +1,102 @@
+<div class="auth-page">
+  <header class="auth-header">
+    <a routerLink="/" class="brand">MSaaS Compras</a>
+    <a routerLink="/login" class="btn btn-outline">Login</a>
+  </header>
+
+  <main class="auth-main">
+    <section class="auth-card">
+      <h1>Criar Conta</h1>
+      <p class="subtitle">Cadastre seu estabelecimento para começar.</p>
+
+      @if (erro()) {
+        <div class="alert alert-error">{{ erro() }}</div>
+      }
+      @if (sucesso()) {
+        <div class="alert alert-success">{{ sucesso() }}</div>
+      }
+
+      <form (ngSubmit)="submeter()">
+        <div class="form-group">
+          <label for="nomeEstabelecimento">Nome do Estabelecimento *</label>
+          <input
+            id="nomeEstabelecimento"
+            name="nomeEstabelecimento"
+            type="text"
+            [(ngModel)]="nomeEstabelecimento"
+            placeholder="Mercadinho São José"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="nomeResponsavel">Nome do Responsável *</label>
+          <input
+            id="nomeResponsavel"
+            name="nomeResponsavel"
+            type="text"
+            [(ngModel)]="nomeResponsavel"
+            placeholder="João Silva"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="email">E-mail *</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            [(ngModel)]="email"
+            placeholder="joao@mercadinho.com.br"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="senha">Senha *</label>
+          <input
+            id="senha"
+            name="senha"
+            type="password"
+            [(ngModel)]="senha"
+            placeholder="Mínimo 8 caracteres (letras e números)"
+            required
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="telefone">Telefone (Opcional)</label>
+            <input
+              id="telefone"
+              name="telefone"
+              type="text"
+              [(ngModel)]="telefone"
+              placeholder="(64) 99999-1111"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="documento">CPF ou CNPJ (Opcional)</label>
+            <input
+              id="documento"
+              name="documento"
+              type="text"
+              [(ngModel)]="documento"
+              placeholder="Apenas números ou com máscara"
+            />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="carregando()">
+          {{ carregando() ? 'Cadastrando...' : 'Criar Conta' }}
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Já possui conta? <a routerLink="/login">Faça login</a>
+      </div>
+    </section>
+  </main>
+</div>
