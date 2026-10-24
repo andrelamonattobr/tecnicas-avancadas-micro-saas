@@ -1,0 +1,122 @@
+<section class="fornecedor-form-page">
+  <header class="page-header">
+    <div>
+      <h1>{{ modoEdicao() ? 'Editar Fornecedor' : 'Cadastrar Novo Fornecedor' }}</h1>
+      <p>
+        {{
+          modoEdicao()
+            ? 'Atualize os dados cadastrais do fornecedor (ID e Documento não são editáveis).'
+            : 'Preencha os dados do novo fornecedor da sua carteira.'
+        }}
+      </p>
+    </div>
+    <a routerLink="/aplicacao/fornecedores" class="btn btn-outline">Voltar para Lista</a>
+  </header>
+
+  <div class="form-card">
+    @if (erro()) {
+      <div class="alert alert-error">{{ erro() }}</div>
+    }
+    @if (sucesso()) {
+      <div class="alert alert-success">{{ sucesso() }}</div>
+    }
+
+    <form (ngSubmit)="salvar()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fornecedorId">ID do Fornecedor</label>
+          <input
+            id="fornecedorId"
+            name="fornecedorId"
+            type="text"
+            [ngModel]="fornecedorId"
+            [readonly]="true"
+            disabled
+            placeholder="Gerado automaticamente"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="documento">Documento - CPF ou CNPJ (Opcional)</label>
+          <input
+            id="documento"
+            name="documento"
+            type="text"
+            [(ngModel)]="documento"
+            [readonly]="modoEdicao()"
+            [disabled]="modoEdicao()"
+            placeholder="12.345.678/0001-99"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nome">Nome / Razão Social *</label>
+          <input
+            id="nome"
+            name="nome"
+            type="text"
+            [(ngModel)]="nome"
+            placeholder="Distribuidora Central"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="nomeContato">Nome do Contato / Vendedor</label>
+          <input
+            id="nomeContato"
+            name="nomeContato"
+            type="text"
+            [(ngModel)]="nomeContato"
+            placeholder="Carlos Vendedor"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="telefoneWhatsapp">Telefone WhatsApp *</label>
+          <input
+            id="telefoneWhatsapp"
+            name="telefoneWhatsapp"
+            type="text"
+            [(ngModel)]="telefoneWhatsapp"
+            placeholder="(64) 99999-1234"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            [(ngModel)]="email"
+            placeholder="contato@fornecedor.com.br"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="categoria">Categoria</label>
+        <input
+          id="categoria"
+          name="categoria"
+          type="text"
+          [(ngModel)]="categoria"
+          placeholder="Ex.: Bebidas, Hortifrúti, Embalagens"
+        />
+      </div>
+
+      <div class="form-actions">
+        <a routerLink="/aplicacao/fornecedores" class="btn btn-outline">Cancelar</a>
+        <button type="submit" class="btn btn-primary" [disabled]="carregando()">
+          {{ carregando() ? 'Salvando...' : modoEdicao() ? 'Salvar Alterações' : 'Cadastrar Fornecedor' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</section>

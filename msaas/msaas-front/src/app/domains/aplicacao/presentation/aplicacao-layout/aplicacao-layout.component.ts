@@ -1,12 +1,12 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../comerciante/application/auth.service';
 import { TokenStorageService } from '../../../core/auth/token-storage.service';
 
 @Component({
   selector: 'app-aplicacao-layout',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './aplicacao-layout.component.html',
   styleUrl: './aplicacao-layout.component.scss'
 })

@@ -1,0 +1,132 @@
+<section class="fornecedores-page">
+  <header class="page-header">
+    <div>
+      <h1>Fornecedores</h1>
+      <p>Gerencie os fornecedores vinculados ao seu estabelecimento.</p>
+    </div>
+    <a routerLink="/aplicacao/fornecedores/novo" class="btn btn-primary">
+      + Novo Fornecedor
+    </a>
+  </header>
+
+  @if (erro()) {
+    <div class="alert alert-error">{{ erro() }}</div>
+  }
+  @if (mensagemSucesso()) {
+    <div class="alert alert-success">{{ mensagemSucesso() }}</div>
+  }
+
+  <div class="filters-bar">
+    <div class="search-box">
+      <input
+        type="text"
+        name="termoBusca"
+        [(ngModel)]="termoBusca"
+        (keyup.enter)="aplicarFiltro()"
+        placeholder="Buscar por nome ou categoria..."
+      />
+      <button type="button" class="btn btn-outline" (click)="aplicarFiltro()">Buscar</button>
+    </div>
+
+    <div class="status-filter">
+      <label for="statusSelect">Situação:</label>
+      <select id="statusSelect" name="filtroAtivo" [(ngModel)]="filtroAtivo" (change)="aplicarFiltro()">
+        <option [ngValue]="true">Ativos</option>
+        <option [ngValue]="false">Inativos</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Contato</th>
+          <th>WhatsApp</th>
+          <th>Documento</th>
+          <th>Categoria</th>
+          <th>Status</th>
+          <th class="actions-col">Ações Rápidas</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (fornecedores().length === 0) {
+          <tr>
+            <td colspan="8" class="empty-row">
+              {{ carregando() ? 'Carregando fornecedores...' : 'Nenhum fornecedor encontrado.' }}
+            </td>
+          </tr>
+        }
+        @for (item of fornecedores(); track item.id) {
+          <tr>
+            <td>#{{ item.id }}</td>
+            <td class="font-semibold">{{ item.nome }}</td>
+            <td>{{ item.nomeContato || '-' }}</td>
+            <td>{{ item.telefoneWhatsapp }}</td>
+            <td>{{ item.documento || '-' }}</td>
+            <td>{{ item.categoria || '-' }}</td>
+            <td>
+              <span class="status-badge" [class.inactive]="!item.ativo">
+                {{ item.ativo ? 'Ativo' : 'Inativo' }}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <a
+                [routerLink]="['/aplicacao/fornecedores', item.id, 'editar']"
+                class="btn btn-outline btn-xs"
+              >
+                Editar
+              </a>
+              @if (item.ativo) {
+                <button
+                  type="button"
+                  class="btn btn-danger btn-xs"
+                  (click)="inativarFornecedor(item.id)"
+                >
+                  Deletar (Inativar)
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="btn btn-primary btn-xs"
+                  (click)="reativarFornecedor(item.id)"
+                >
+                  Reativar
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <footer class="pagination-bar">
+      <span class="pagination-info">
+        Total de registros: <strong>{{ totalElementos() }}</strong>
+      </span>
+      <div class="pagination-controls">
+        <button
+          type="button"
+          class="btn btn-outline btn-xs"
+          [disabled]="paginaAtual() === 0"
+          (click)="mudarPagina(paginaAtual() - 1)"
+        >
+          Anterior
+        </button>
+        <span class="page-indicator">
+          Página {{ totalPaginas() > 0 ? paginaAtual() + 1 : 1 }} de {{ totalPaginas() || 1 }}
+        </span>
+        <button
+          type="button"
+          class="btn btn-outline btn-xs"
+          [disabled]="paginaAtual() + 1 >= totalPaginas()"
+          (click)="mudarPagina(paginaAtual() + 1)"
+        >
+          Próxima
+        </button>
+      </div>
+    </footer>
+  </div>
+</section>
