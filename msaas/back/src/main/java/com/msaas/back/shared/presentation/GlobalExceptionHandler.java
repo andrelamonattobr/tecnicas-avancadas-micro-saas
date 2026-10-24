@@ -1,6 +1,7 @@
 package com.msaas.back.shared.presentation;
 
 import com.msaas.back.shared.domain.exception.CredenciaisInvalidasException;
+import com.msaas.back.shared.domain.exception.RecursoNaoEncontradoException;
 import com.msaas.back.shared.domain.exception.RegraNegocioException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CredenciaisInvalidasException.class)
     public ResponseEntity<Map<String, String>> handleCredenciaisInvalidas(CredenciaisInvalidasException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("erro", ex.getMessage(), "mensagem", ex.getMessage()));
+    }
+
+    @ExceptionHandler(RecursoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, String>> handleRecursoNaoEncontrado(RecursoNaoEncontradoException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("erro", ex.getMessage(), "mensagem", ex.getMessage()));
     }
 }
